@@ -8,7 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pokedex.R
+import com.example.pokedex.databinding.PokemonListFragmentBinding
 import com.example.pokedex.infra.pokeapi.PokeApi
 
 class PokemonListFragment : Fragment() {
@@ -18,18 +20,29 @@ class PokemonListFragment : Fragment() {
     }
 
     private lateinit var viewModel: PokemonListViewModel
+    private val adapter = PokemonListAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.pokemon_list_fragment, container, false)
+    ): View {
+        val binding = PokemonListFragmentBinding.inflate(
+            inflater,
+            container,
+            false
+        )
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         lifecycleScope.launchWhenStarted {
-            Log.d("api response", PokeApi.retrofitService.getPokemon().body().toString())
+            PokeApi.retrofitService.getPokemon().body()?.let {
+                adapter.pokemonList = it.results
+            }
         }
     }
 
